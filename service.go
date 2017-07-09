@@ -1,6 +1,11 @@
 package sctl
 
-import "strings"
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"strings"
+)
 
 // Service Holds service configuration info
 type Service struct {
@@ -72,4 +77,20 @@ func DockerCommand(args []string) Command {
 		Main: "docker",
 		Args: args,
 	}
+}
+
+// ServiceFilePath Creates a file path to a service's definition file
+func (service Service) ServiceFilePath(path string) string {
+	return fmt.Sprintf("%s/%s.json", path, service.Name)
+}
+
+// GetServiceDef reads a given service definition file and stores the content in the given service struct
+func (service *Service) GetServiceDef(path string) error {
+	filePath := service.ServiceFilePath(path)
+	raw, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+	json.Unmarshal(raw, &service)
+	return nil
 }

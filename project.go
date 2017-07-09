@@ -1,5 +1,7 @@
 package sctl
 
+import "database/sql"
+
 // Project holds metadata about a project
 type Project struct {
 	Name        string `json:"name"`
@@ -8,6 +10,7 @@ type Project struct {
 	IsActive    bool   `json:"isActive"`
 	Network     string `json:"network"`
 	MasterToken string `json:"masterToken"`
+	Master      string `json:"master"`
 }
 
 // NewProject generates a new project based on name an folder
@@ -31,4 +34,36 @@ func ProjectSchema() string {
       NETWORK VARCHAR(60),
       MASTER_TOKEN VARCHAR(260)
     )`
+}
+
+// GetActiveProject Fetches the name of the current active project
+func GetActiveProject(db *sql.DB) (string, error) {
+	var projectName string
+	query := "SELECT NAME FROM PROJECT WHERE IS_ACTIVE=1"
+	err := db.QueryRow(query).Scan(&projectName)
+	return projectName, err
+}
+
+//MakeMasterNode creates node struct for a project master node
+func (project Project) MakeMasterNode() Node {
+	return Node{
+		Project:  project.Name,
+		IP:       project.Master,
+		OS:       "linux",
+		IsMaster: true,
+	}
+}
+
+// Insert Inserts a new project into the database and sets it to active
+func (project Project) Insert(db *sql.DB) error {
+	stmt, err := db.Prepare("INSERT INTO PROJECT(NAME, FOLDER, IS_ACTIVE, NETWORK, MASTER_TOKEN) VALUES ($1,$2,$3,$4,$5)")
+	defer stmt.Close()
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(project.Name, project.Folder, true, project.Network, project.MasterToken)
+	if err != nil {
+		return err
+	}
+	return nil
 }
