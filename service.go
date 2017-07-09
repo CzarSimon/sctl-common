@@ -11,7 +11,7 @@ import (
 type Service struct {
 	Name        string   `json:"name"`
 	Image       string   `json:"image"`
-	EnvArgs     []string `json:"envArgs"`
+	EnvVars     []string `json:"envVars"`
 	KeywordArgs []string `json:"keywordArgs"`
 }
 
@@ -42,7 +42,7 @@ func (service Service) StopCommand() Command {
 // RunCommand creates a command to start a servcie
 func (service Service) RunCommand(network string) Command {
 	args := []string{"service", "create", "--name", service.Name, "--network", network}
-	args = append(args, service.GetEnvArgs()...)
+	args = append(args, service.GetEnvVars()...)
 	args = append(args, service.GetKeywordArgs()...)
 	return Command{
 		Main: "docker",
@@ -50,11 +50,11 @@ func (service Service) RunCommand(network string) Command {
 	}
 }
 
-// GetEnvArgs Formats the environment arguments in a service definition to be runnable
-func (service Service) GetEnvArgs() []string {
+// GetEnvVars Formats the environment arguments in a service definition to be runnable
+func (service Service) GetEnvVars() []string {
 	args := make([]string, 0)
 	EnvFlag := "-e"
-	for _, arg := range service.EnvArgs {
+	for _, arg := range service.EnvVars {
 		if arg != EnvFlag {
 			args = append(args, EnvFlag, arg)
 		}
