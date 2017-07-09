@@ -56,12 +56,13 @@ func (project Project) MakeMasterNode() Node {
 
 // Insert Inserts a new project into the database and sets it to active
 func (project Project) Insert(db *sql.DB) error {
-	stmt, err := db.Prepare("INSERT INTO PROJECT(NAME, FOLDER, IS_ACTIVE, NETWORK, MASTER_TOKEN) VALUES ($1,$2,$3,$4,$5)")
+	query := "INSERT INTO PROJECT(NAME, FOLDER, SWARM_TOKEN, IS_ACTIVE, NETWORK, MASTER_TOKEN) VALUES ($1,$2,$3,$4,$5,$6)"
+	stmt, err := db.Prepare(query)
 	defer stmt.Close()
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(project.Name, project.Folder, true, project.Network, project.MasterToken)
+	_, err = stmt.Exec(project.Name, project.Folder, project.SwarmToken, true, project.Network, project.MasterToken)
 	if err != nil {
 		return err
 	}
