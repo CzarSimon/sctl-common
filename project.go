@@ -66,5 +66,19 @@ func (project Project) Insert(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
+	return project.InactivateOthers(db)
+}
+
+// InactivateOthers Sets all other projects besides the supplied one to inactive
+func (project Project) InactivateOthers(db *sql.DB) error {
+	stmt, err := db.Prepare("UPDATE PROJECT SET IS_ACTIVE=0 WHERE NAME!=$1")
+	defer stmt.Close()
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(project.Name)
+	if err != nil {
+		return err
+	}
 	return nil
 }
