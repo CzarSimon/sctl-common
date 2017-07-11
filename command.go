@@ -3,6 +3,7 @@ package sctl
 import (
 	"bytes"
 	"os/exec"
+	"strings"
 )
 
 // Command Holds the main command and argument to be executed against os/exec
@@ -22,4 +23,9 @@ func (command Command) Execute() (string, error) {
 		return errOut.String(), err
 	}
 	return out.String(), nil
+}
+
+// ToString returns the string representation of the command
+func (command Command) ToString() string {
+	return command.Main + " " + strings.Join(command.Args, " ")
 }
