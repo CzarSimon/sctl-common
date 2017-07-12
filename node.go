@@ -2,17 +2,17 @@ package sctl
 
 import (
 	"fmt"
-	
+
 	"database/sql"
 )
-	
+
 // Node contains node metadata
 type Node struct {
 	Project  string `json:"project"`
 	IP       string `json:"ip"`
 	OS       string `json:"os"`
 	IsMaster bool   `json:"isMaster"`
-	User	 string `json:"user"`
+	User     string `json:"user"`
 }
 
 //SetToMinion sets a node struct to hold values of a minion
@@ -43,7 +43,7 @@ func (node Node) RsyncCommand(execFolder string) Command {
 	target := fmt.Sprintf("%s:/etc/init.d/", node.Remote())
 	return Command{
 		Main: "rsync",
-		Args: []string{execFolder, target}
+		Args: []string{execFolder, target},
 	}
 }
 

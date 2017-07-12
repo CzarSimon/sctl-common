@@ -15,8 +15,8 @@ type Token struct {
 }
 
 // Valid checks if a token in valid or out of date
-type (token Token) Valid() bool {
-	var maxAge float64 = 300.0
+func (token Token) Valid() bool {
+	maxAge := 300.0
 	now := time.Now().UTC()
 	difference := now.Sub(token.Timestamp)
 	return difference.Seconds() <= maxAge
@@ -25,8 +25,8 @@ type (token Token) Valid() bool {
 // NewToken Return a new random token with timestamp set to the current UTC time
 func NewToken(length int) Token {
 	return Token{
-		Data:      GenrateToken(length),
-		Timestamp: time.Now().UTC().
+		Data:      GenerateToken(length),
+		Timestamp: time.Now().UTC(),
 	}
 }
 
@@ -53,6 +53,6 @@ func TokenSchema() string {
 		AUTH VARCHAR(64)
 		MASTER VARCHAR(260)
 		AUTH_TIMESTAMP TIMESTAMP
-	)		
+	)
 	`
 }
