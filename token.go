@@ -2,16 +2,35 @@ package sctl
 
 import (
 	"crypto/sha256"
+	"database/sql"
 	"fmt"
 	"math/rand"
+	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/CzarSimon/util"
+	_ "github.com/mattn/go-sqlite3" // sqlite driver for token-db
 )
 
 // Token Struct to keep a token and its timestamp
 type Token struct {
 	Data      string    `json:"data"`
 	Timestamp time.Time `json:"timestamp"`
+}
+
+// TokenBundle Struct to keep all project tokens
+type TokenBundle struct {
+	Auth   Token
+	Master string
+}
+
+// ToBundle Turns a token to a TokenBundle with a given master token
+func (token Token) ToBundle(masterToken string) TokenBundle {
+	return TokenBundle{
+		Auth:   token,
+		Master: masterToken,
+	}
 }
 
 // Valid checks if a token in valid or out of date
@@ -50,9 +69,30 @@ func TokenPart() string {
 // TokenSchema Returns the token schema
 func TokenSchema() string {
 	return `CREATE TABLE TOKEN(
-		AUTH VARCHAR(64)
-		MASTER VARCHAR(260)
-		AUTH_TIMESTAMP TIMESTAMP
+		AUTH VARCHAR(64),
+		MASTER VARCHAR(260),
+		AUTH_TIMESTAMP DATETIME
 	)
 	`
+}
+
+// GetTokenBundle Retrives tokens from the token-db
+func GetTokenBundle(path string) TokenBundle {
+	db := ConnectTokenDB(path)
+	defer db.Close()
+	var tokens TokenBundle
+	err := db.QueryRow("SELECT AUTH, MASTER, AUTH_TIMESTAMP FROM TOKEN").Scan(
+		&tokens.Auth.Data, &tokens.Master, &tokens.Auth.Timestamp)
+	util.CheckErrFatal(err)
+	return tokens
+}
+
+// ConnectTokenDB Connects to a token db and returns the handler
+func ConnectTokenDB(path string) *sql.DB {
+	dbFile := filepath.Join(path, "token-db")
+	db, err := sql.Open("sqlite3", dbFile)
+	util.CheckErrFatal(err)
+	err = db.Ping()
+	util.CheckErrFatal(err)
+	return db
 }
