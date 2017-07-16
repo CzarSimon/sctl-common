@@ -33,18 +33,25 @@ func (token Token) ToBundle(masterToken string) TokenBundle {
 	}
 }
 
+// Print Prints the content of the token bundle in a formated way
+func (tokens TokenBundle) Print() {
+	fmt.Println("Auth token", tokens.Auth.Data)
+	fmt.Println("Timestamp ", tokens.Auth.Timestamp)
+	fmt.Println("Master:")
+	fmt.Println(strings.Replace(tokens.Master, "-", "\n", -1))
+}
+
 // Valid checks if a token in valid or out of date
-func (token Token) Valid() bool {
-	maxAge := 300.0
+func (token Token) Valid(maxAge float64) bool {
 	now := time.Now().UTC()
 	difference := now.Sub(token.Timestamp)
 	return difference.Seconds() <= maxAge
 }
 
 // NewToken Return a new random token with timestamp set to the current UTC time
-func NewToken(length int) Token {
+func NewToken() Token {
 	return Token{
-		Data:      GenerateToken(length),
+		Data:      GenerateToken(1),
 		Timestamp: time.Now().UTC(),
 	}
 }

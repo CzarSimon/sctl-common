@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/CzarSimon/util"
+
 	"database/sql"
 )
 
@@ -26,8 +28,16 @@ func (node *Node) SetToMinion(db *sql.DB) error {
 		node.Project = projectName
 	}
 	node.IsMaster = false
-	node.OS = "linux"
 	return nil
+}
+
+// ToMinon Turns a node into a minion server config
+func (node Node) ToMinon() util.ServerConfig {
+	return util.ServerConfig{
+		Protocol: "https",
+		Port:     "9105",
+		Host:     node.IP,
+	}
 }
 
 // SSHCommand Creates an ssh command to be executed on the node
@@ -41,7 +51,7 @@ func (node Node) SSHCommand(args ...string) Command {
 
 // RsyncFolderCMD Creates a command to rsync minion executables to the node
 func (node Node) RsyncFolderCMD(execFolder, targetFolder string) Command {
-	target := node.rsyncTarget(targetFolder)
+	target := node.RsyncTarget(targetFolder)
 	source := execFolder + fmt.Sprintf("%c", os.PathSeparator)
 	return Command{
 		Main: "rsync",
@@ -53,12 +63,12 @@ func (node Node) RsyncFolderCMD(execFolder, targetFolder string) Command {
 func (node Node) RsyncFileCMD(filePath, targetFolder string) Command {
 	return Command{
 		Main: "rsync",
-		Args: []string{filePath, node.rsyncTarget(targetFolder)},
+		Args: []string{filePath, node.RsyncTarget(targetFolder)},
 	}
 }
 
-// rsyncTarget Prepends user@hostname: to target folder if node is not local
-func (node Node) rsyncTarget(targetFolder string) string {
+// RsyncTarget Prepends user@hostname: to target folder if node is not local
+func (node Node) RsyncTarget(targetFolder string) string {
 	if node.IsLocal() {
 		return targetFolder
 	}

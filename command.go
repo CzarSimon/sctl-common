@@ -1,8 +1,9 @@
 package sctl
 
 import (
-	"bytes"
+	"log"
 	"os/exec"
+	"runtime/debug"
 	"strings"
 )
 
@@ -14,18 +15,21 @@ type Command struct {
 
 // Execute Executes a given command against os/exec and return the output and potential errors
 func (command Command) Execute() (string, error) {
-	cmd := exec.Command(command.Main, command.Args...)
-	var out, errOut bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &errOut
-	err := cmd.Run()
+	out, err := exec.Command(command.Main, command.Args...).Output()
 	if err != nil {
-		return errOut.String(), err
+		log.Println("Failed: " + command.ToString())
+		log.Println(string(debug.Stack()))
 	}
-	return out.String(), nil
+	return string(out), err
 }
 
 // ToString returns the string representation of the command
 func (command Command) ToString() string {
 	return command.Main + " " + strings.Join(command.Args, " ")
+}
+
+// MinionCommand Holds a command and the minon it should be sent to
+type MinionCommand struct {
+	Minion  Node    `json:"node"`
+	Command Command `json:"command"`
 }
