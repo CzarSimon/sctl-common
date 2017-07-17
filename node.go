@@ -72,7 +72,7 @@ func (node Node) RsyncTarget(targetFolder string) string {
 	if node.IsLocal() {
 		return targetFolder
 	}
-	return node.Remote() + ":" + targetFolder
+	return node.Remote() + ":/home/" + node.User
 }
 
 // IsLocal Checks if node is localhost
