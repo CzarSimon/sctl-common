@@ -1,0 +1,15 @@
+{
+  "name": "test-service",
+  "image": "test/image",
+  "keywordArgs": [
+    "-p 80:80",
+    "-d"
+  ],
+  "envVars": [
+    "ENV_VAR=$ENV_KEY",
+    "-e", "ENV_VAR=VALUE",
+    "ENV_VAR=$NO_KEY",
+    "ENV_VAR=$SCHMONEY$",
+    "ENV_VAR2", "$ENV_KEY"
+  ]
+}

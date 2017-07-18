@@ -28,6 +28,14 @@ func (command Command) ToString() string {
 	return command.Main + " " + strings.Join(command.Args, " ")
 }
 
+// DockerCommand creates a general docker command
+func DockerCommand(args []string) Command {
+	return Command{
+		Main: "docker",
+		Args: args,
+	}
+}
+
 // MinionCommand Holds a command and the minon it should be sent to
 type MinionCommand struct {
 	Minion  Node    `json:"node"`

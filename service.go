@@ -2,8 +2,9 @@ package sctl
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -56,10 +57,33 @@ func (service Service) GetEnvVars() []string {
 	EnvFlag := "-e"
 	for _, arg := range service.EnvVars {
 		if arg != EnvFlag {
-			args = append(args, EnvFlag, arg)
+			args = append(args, EnvFlag, parseEnvArgs(arg))
 		}
 	}
 	return args
+}
+
+func parseEnvArgs(candidate string) string {
+	if !strings.Contains(candidate, "=") {
+		return subsituteEnvArg(candidate)
+	}
+	parts := strings.Split(candidate, "=")
+	parts[1] = subsituteEnvArg(parts[1])
+	return strings.Join(parts, "=")
+}
+
+// subsituteEnvArg checks wheter an env arg is trying to itself use an environment variable, and if so substitutes it.
+func subsituteEnvArg(key string) string {
+	EnvArgSymbol := "$"
+	if !strings.HasPrefix(key, EnvArgSymbol) {
+		return key
+	}
+	cleanKey := strings.Replace(key, EnvArgSymbol, "", 1)
+	value := os.Getenv(cleanKey)
+	if value == "" {
+		return key
+	}
+	return value
 }
 
 // GetKeywordArgs Formats the keyword arguments in a service definition to be runnable
@@ -71,17 +95,9 @@ func (service Service) GetKeywordArgs() []string {
 	return args
 }
 
-// DockerCommand creates a general docker command
-func DockerCommand(args []string) Command {
-	return Command{
-		Main: "docker",
-		Args: args,
-	}
-}
-
 // ServiceFilePath Creates a file path to a service's definition file
 func (service Service) ServiceFilePath(path string) string {
-	return fmt.Sprintf("%s/%s.json", path, service.Name)
+	return filepath.Join(path, service.Name) + ".json"
 }
 
 // GetServiceDef reads a given service definition file and stores the content in the given service struct
