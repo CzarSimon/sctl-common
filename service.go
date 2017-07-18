@@ -63,6 +63,7 @@ func (service Service) GetEnvVars() []string {
 	return args
 }
 
+// parseEnvArgs Substitutes env args with $ into the actual value
 func parseEnvArgs(candidate string) string {
 	if !strings.Contains(candidate, "=") {
 		return subsituteEnvArg(candidate)
