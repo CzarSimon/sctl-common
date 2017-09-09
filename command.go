@@ -1,9 +1,8 @@
 package sctl
 
 import (
-	"log"
+	"bytes"
 	"os/exec"
-	"runtime/debug"
 	"strings"
 )
 
@@ -15,12 +14,15 @@ type Command struct {
 
 // Execute Executes a given command against os/exec and return the output and potential errors
 func (command Command) Execute() (string, error) {
-	out, err := exec.Command(command.Main, command.Args...).Output()
+	cmd := exec.Command(command.Main, command.Args...)
+	var out, errOut bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &errOut
+	err := cmd.Run()
 	if err != nil {
-		log.Println("Failed: " + command.ToString())
-		log.Println(string(debug.Stack()))
+		return errOut.String(), err
 	}
-	return string(out), err
+	return out.String(), nil
 }
 
 // ToString returns the string representation of the command
